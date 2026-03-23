@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.28) # Modül desteği için 3.28+ önerilir
 project(ColorLine VERSION 1.0.0 LANGUAGES CXX)
 
-# C++ Standart Ayarı
+# C++ Standard
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---------------------------------------------------------------------------
-# 1. KÜTÜPHANE HEDEFİ (Library)
+# 1. LIBRARY TARGET
 # ---------------------------------------------------------------------------
-# Sadece modül ve header'ı içeren bir kütüphane oluşturuyoruz.
+# creating a library that only contains the module and header.
 add_library(colorline_lib)
 
 target_sources(colorline_lib
@@ -23,16 +23,15 @@ target_include_directories(colorline_lib
 )
 
 # ---------------------------------------------------------------------------
-# 2. UYGULAMA HEDEFİ (Executable/CLI)
+# 2. EXECUTABLE (Example/CLI)
 # ---------------------------------------------------------------------------
-# Bu kısım senin terminalden kullanacağın programı derler.
+# This section compiles the program you will use from the terminal.
 add_executable(colorline_cli src/main.cpp)
 
-# Uygulamanın kütüphaneyi kullanmasını sağla
+# Enable the application to use the library
 target_link_libraries(colorline_cli PRIVATE colorline_lib)
 
-# Çıktı ismini senin istediğin gibi "colorline" yapalım
-set_target_properties(colorline_cli PROPERTIES OUTPUT_NAME "colorline")
-
-# Nihai binary dosyasını "bin" klasörüne atması için (Opsiyonel)
-set_target_properties(colorline_cli PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set_target_properties(colorline_cli PROPERTIES 
+    OUTPUT_NAME "colorline"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin" # To place final binary into the "bin" folder (Optional)
+)
