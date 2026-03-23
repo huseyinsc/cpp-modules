@@ -16,19 +16,23 @@
 
 class TerminalReader {
 public:
+    static void setRawMode(bool enable, void* old_settings);
+    static bool isTerminal();
+    static int getChar();
+    static std::string getUTF8Char(int firstByte);
+    static void removeLastUTF8Char(std::string& str);
     // Standart Placeholder Okuma
     static std::string readWithPlaceholder(const std::string& prompt, const std::string& placeholder);
     
     // Ghost Text (Zsh stili) Okuma
-    static std::string readWithGhostText(const std::string& prompt, const std::string& suggestion);
+    static std::string readWithGhostText(
+        const std::string& prompt, 
+        const std::string& suggestion, 
+        const std::string& placeholder = ""
+    );
     
     // Şifre Okuma (Yazılanı gizler veya yıldız koyar)
     static std::string readPassword(const std::string& prompt, bool mask = true);
-
-private:
-    static void setRawMode(bool enable, void* old_settings);
-    static int getChar();
-    static bool isTerminal();
 };
 
 #endif

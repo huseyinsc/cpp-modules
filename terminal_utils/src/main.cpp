@@ -5,17 +5,17 @@ int main() {
     std::cout << "--- Terminal Utils Demo ---" << std::endl;
 
     // 1. Placeholder Örneği
-    std::string name = TerminalReader::readWithPlaceholder("Adınız: ", "Hüseyin");
-    std::cout << "Merhaba, " << (name.empty() ? "Misafir" : name) << "!\n" << std::endl;
+    std::string name = TerminalReader::readWithGhostText("Name: ", "Hüseyin", "<your name>");
+    std::cout << "Hello, " << (name.empty() ? "Guest" : name) << "!\n" << std::endl;
 
     // 2. Ghost Text Örneği
-    std::cout << "İpucu: 'git commit -m' yazmayı deneyin." << std::endl;
-    std::string cmd = TerminalReader::readWithGhostText("Komut: ", "git commit -m \"initial commit\"");
-    std::cout << "Çalıştırılacak: " << cmd << "\n" << std::endl;
+    std::cout << "Hint: Try typing 'git commit -m'." << std::endl;
+    std::string cmd = TerminalReader::readWithGhostText("Command: ", "git commit -m \"initial commit\"");
+    std::cout << "Executing: " << cmd << "\n" << std::endl;
 
     // 3. Şifre Örneği
-    std::string pass = TerminalReader::readPassword("Şifre: ", true);
-    std::cout << "Şifre alındı (" << pass.length() << " karakter)." << std::endl;
+    std::string pass = TerminalReader::readPassword("Password: ", true);
+    std::cout << "Password retrieved (" << pass.length() << " characters)." << std::endl;
 
     return 0;
 }
