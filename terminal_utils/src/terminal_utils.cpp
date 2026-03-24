@@ -204,7 +204,10 @@ std::string TerminalReader::readPassword(const std::string& prompt, bool mask) {
     return password;
 }
 
-int TerminalReader::selectMenu(const std::string& prompt, const std::vector<std::string>& options) {
+int TerminalReader::selectMenu(
+    const std::string& prompt, 
+    const std::vector<std::string>& options
+) {
     if (!isTerminal() || options.empty()) return 0;
     int selected = 0;
     int max_options = options.size();
@@ -242,6 +245,50 @@ int TerminalReader::selectMenu(const std::string& prompt, const std::vector<std:
     setRawMode(false, &oldt);
 #endif
     return selected;
+}
+
+std::string TerminalReader::selectMenu(
+    const std::string& prompt, 
+    const std::vector<std::pair<std::string, std::string>>& options
+) {
+    if (!isTerminal() || options.empty()) return "";
+    int selected = 0;
+    int max_options = options.size();
+#ifndef _WIN32
+    struct termios oldt; setRawMode(true, &oldt);
+#endif
+
+    auto render = [&]() {
+        std::cout << "\r\033[2K" << prompt << "\n";
+        for (int i = 0; i < max_options; ++i) {
+            std::cout << "\033[2K\r";
+            if (i == selected) {
+                std::cout << Colored::fg(Color::LightAqua) << "  > " << options[i].second << Colored::Reset << "\n";
+            } else {
+                std::cout << "    " << options[i].second << "\n";
+            }
+        }
+        std::cout << "\033[" << max_options + 1 << "A" << std::flush;
+    };
+
+    render();
+    while (true) {
+        int c = getChar();
+        if (c == 13 || c == 10) break; // Enter
+#ifdef _WIN32
+        if (c == 72) { selected = (selected - 1 + max_options) % max_options; render(); } // Yukarı Ok
+        else if (c == 80) { selected = (selected + 1) % max_options; render(); } // Aşağı Ok
+#else
+        if (c == 65) { selected = (selected - 1 + max_options) % max_options; render(); } // Yukarı Ok
+        else if (c == 66) { selected = (selected + 1) % max_options; render(); } // Aşağı Ok
+#endif
+    }
+    std::cout << "\033[" << max_options + 1 << "B";
+#ifndef _WIN32
+    setRawMode(false, &oldt);
+#endif
+    // 3. Seçilen elemanın indeksini değil, arkadaki değerini (second) döndürüyoruz
+    return options[selected].first;
 }
 
 std::vector<int> TerminalReader::multiSelectMenu(const std::string& prompt, const std::vector<std::string>& options) {
@@ -289,6 +336,63 @@ std::vector<int> TerminalReader::multiSelectMenu(const std::string& prompt, cons
     std::vector<int> result;
     for (int i = 0; i < max_options; ++i) {
         if (checked[i]) result.push_back(i);
+    }
+    return result;
+}
+
+std::vector<std::string> TerminalReader::multiSelectMenu(
+    const std::string& prompt, 
+    const std::vector<std::pair<std::string, std::string>>& options
+) {
+    if (!isTerminal() || options.empty()) return {};
+    int selected = 0;
+    int max_options = options.size();
+    std::vector<bool> checked(max_options, false);
+#ifndef _WIN32
+    struct termios oldt; setRawMode(true, &oldt);
+#endif
+
+    auto render = [&]() {
+        std::cout << "\r\033[2K" << prompt << "\n";
+        for (int i = 0; i < max_options; ++i) {
+            std::cout << "\033[2K\r";
+            std::string box = checked[i] ? "[x] " : "[ ] ";
+            if (i == selected) {
+                // Ekrana options[i].second (gösterilecek metin) yazdırılır
+                std::cout << Colored::fg(Color::LightAqua) << "  > " << box << options[i].second << Colored::Reset << "\n";
+            } else {
+                auto color = checked[i] ? Color::LightGreen : Color::White;
+                // Ekrana options[i].second yazdırılır
+                std::cout << Colored::fg(color) << "    " << box << options[i].second << Colored::Reset << "\n";
+            }
+        }
+        std::cout << "\033[" << max_options + 1 << "A" << std::flush;
+    };
+
+    render();
+    while (true) {
+        int c = getChar();
+        if (c == 13 || c == 10) break; // Enter
+        if (c == 32) { checked[selected] = !checked[selected]; render(); } // Space ile Toggle
+#ifdef _WIN32
+        else if (c == 72) { selected = (selected - 1 + max_options) % max_options; render(); }
+        else if (c == 80) { selected = (selected + 1) % max_options; render(); }
+#else
+        else if (c == 65) { selected = (selected - 1 + max_options) % max_options; render(); }
+        else if (c == 66) { selected = (selected + 1) % max_options; render(); }
+#endif
+    }
+    std::cout << "\033[" << max_options + 1 << "B";
+#ifndef _WIN32
+    setRawMode(false, &oldt);
+#endif
+
+    std::vector<std::string> result;
+    for (int i = 0; i < max_options; ++i) {
+        if (checked[i]) {
+            // Sonuca options[i].first (arka plandaki asıl değer) eklenir
+            result.push_back(options[i].first);
+        }
     }
     return result;
 }

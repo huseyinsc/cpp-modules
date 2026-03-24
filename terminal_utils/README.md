@@ -259,28 +259,47 @@ Reads sensitive input (passwords, tokens, etc.) with optional character masking.
 ##### `selectMenu()`
 
 ```cpp
+// 1. Standard single selection (returns index)
 static int selectMenu(
     const std::string& prompt,
     const std::vector<std::string>& options
 );
+
+// 2. Key-Value single selection (returns underlying value)
+static std::string selectMenu(
+    const std::string& prompt,
+    const std::vector<std::pair<std::string, std::string>>& options
+);
 ```
 
 Creates an interactive single-selection menu. Users navigate with `Up` and `Down` arrow keys and confirm with `Enter`.
+The overloaded version allows you to separate the "Display Member" (what the user sees) from the "Value Member" (what the program gets).
 
 **Parameters:**
 
 - `prompt`: Menu title/description
-- `options`: Vector of menu options
+- `options`:
+  - `vector<string>`: A simple list of options.
+  - `vector<pair<string, string>>`: A list of pairs where `.first` is the display text and `.second` is the returned value.
 
-**Returns:** Index (0-based) of the selected option
+**Returns:** - `int`: Index (0-based) of the selected option (for the standard version). - `std::string`: The underlying value of the selected option (for the pair version).
 
 **Example:**
 
 ```cpp
-std::vector<std::string> langs = {"C++", "Rust", "Go", "Python"};
+/ Standard Version
+std::vector<std::string> langs = {"C++", "Rust", "Go"};
 int choice = TerminalReader::selectMenu("Pick a language:", langs);
-std::cout << "Selected: " << langs[choice] << std::endl;
-// Output: Selected: C++
+// Returns: 0 for C++
+
+// Key-Value Version
+std::vector<std::pair<std::string, std::string>> tools = {
+    {"Run CMake build", "cmake"},
+    {"Run Make build", "make"},
+    {"Standard Compile", "none"}
+};
+std::string toolChoice = TerminalReader::selectMenu("Action:", tools);
+// User sees "Run CMake build", but function returns "cmake"
 ```
 
 ---
@@ -288,20 +307,30 @@ std::cout << "Selected: " << langs[choice] << std::endl;
 ##### `multiSelectMenu()`
 
 ```cpp
+// 1. Standard multi-selection (returns indices)
 static std::vector<int> multiSelectMenu(
     const std::string& prompt,
     const std::vector<std::string>& options
 );
+
+// 2. Key-Value multi-selection (returns underlying values)
+static std::vector<std::string> multiSelectMenu(
+    const std::string& prompt,
+    const std::vector<std::pair<std::string, std::string>>& options
+);
 ```
 
 Creates an interactive multi-selection menu with checkboxes. Users navigate with arrow keys, toggle selections with `Space`, and confirm with `Enter`.
+Similar to `selectMenu`, the overloaded version allows separating display text from internal values.
 
 **Parameters:**
 
 - `prompt`: Menu title/description
-- `options`: Vector of menu options
+- `options`:
+  - `vector<string>`: A simple list of options.
+  - `vector<pair<string, string>>`: A list of pairs where `.first` is the display text and `.second` is the returned value.
 
-**Returns:** Vector of indices (0-based) of all selected options
+**Returns:** - `vector<int>`: Vector of indices of all selected options. - `vector<std::string>`: Vector of the underlying values of all selected options.
 
 **Example:**
 
@@ -314,6 +343,15 @@ for (int idx : selected) {
 // Output:
 // ✓ Docker
 // ✓ CMake
+
+// Key-Value Version
+std::vector<std::pair<std::string, std::string>> flags = {
+    {"Enable all warnings", "-Wall"},
+    {"Optimize for speed", "-O3"},
+    {"Static linking", "-static"}
+};
+auto selectedFlags = TerminalReader::multiSelectMenu("Select compiler flags:", flags);
+// User toggles checkboxes, function returns e.g., {"-Wall", "-O3"}
 ```
 
 ---

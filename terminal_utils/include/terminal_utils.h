@@ -35,9 +35,23 @@ public:
     // Şifre Okuma (Yazılanı gizler veya yıldız koyar)
     static std::string readPassword(const std::string& prompt, bool mask = true);
     // Vite Stili Tekli Seçim (Index döner)
-    static int selectMenu(const std::string& prompt, const std::vector<std::string>& options);
+    static int selectMenu(
+        const std::string& prompt, 
+        const std::vector<std::string>& options
+    );
+    static std::string selectMenu(
+        const std::string& prompt, 
+        const std::vector<std::pair<std::string, std::string>>& options
+    );
     // Checkbox Stili Çoklu Seçim (Seçili indexlerin listesini döner)
-    static std::vector<int> multiSelectMenu(const std::string& prompt, const std::vector<std::string>& options);
+    static std::vector<int> multiSelectMenu(
+        const std::string& prompt, 
+        const std::vector<std::string>& options
+    );
+    static std::vector<std::string> multiSelectMenu(
+        const std::string& prompt, 
+        const std::vector<std::pair<std::string, std::string>>& options
+    );
 };
 
 #endif
