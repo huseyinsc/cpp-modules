@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #ifdef _WIN32
     #include <conio.h>
@@ -33,6 +34,10 @@ public:
     
     // Şifre Okuma (Yazılanı gizler veya yıldız koyar)
     static std::string readPassword(const std::string& prompt, bool mask = true);
+    // Vite Stili Tekli Seçim (Index döner)
+    static int selectMenu(const std::string& prompt, const std::vector<std::string>& options);
+    // Checkbox Stili Çoklu Seçim (Seçili indexlerin listesini döner)
+    static std::vector<int> multiSelectMenu(const std::string& prompt, const std::vector<std::string>& options);
 };
 
 #endif

@@ -1,4 +1,5 @@
 #include "../include/terminal_utils.h"
+#include <colorline.hpp>
 
 void TerminalReader::setRawMode(bool enable, void* old_settings) {
 #ifndef _WIN32
@@ -201,4 +202,93 @@ std::string TerminalReader::readPassword(const std::string& prompt, bool mask) {
     setRawMode(false, &oldt);
 #endif
     return password;
+}
+
+int TerminalReader::selectMenu(const std::string& prompt, const std::vector<std::string>& options) {
+    if (!isTerminal() || options.empty()) return 0;
+    int selected = 0;
+    int max_options = options.size();
+#ifndef _WIN32
+    struct termios oldt; setRawMode(true, &oldt);
+#endif
+
+    auto render = [&]() {
+        std::cout << "\r\033[2K" << prompt << "\n";
+        for (int i = 0; i < max_options; ++i) {
+            std::cout << "\033[2K\r";
+            if (i == selected) {
+                std::cout << Colored::fg(Color::LightAqua) << "  > " << options[i] << Colored::Reset << "\n";
+            } else {
+                std::cout << "    " << options[i] << "\n";
+            }
+        }
+        std::cout << "\033[" << max_options + 1 << "A" << std::flush;
+    };
+
+    render();
+    while (true) {
+        int c = getChar();
+        if (c == 13 || c == 10) break; // Enter
+#ifdef _WIN32
+        if (c == 72) { selected = (selected - 1 + max_options) % max_options; render(); } // Yukarı Ok
+        else if (c == 80) { selected = (selected + 1) % max_options; render(); } // Aşağı Ok
+#else
+        if (c == 65) { selected = (selected - 1 + max_options) % max_options; render(); } // Yukarı Ok
+        else if (c == 66) { selected = (selected + 1) % max_options; render(); } // Aşağı Ok
+#endif
+    }
+    std::cout << "\033[" << max_options + 1 << "B";
+#ifndef _WIN32
+    setRawMode(false, &oldt);
+#endif
+    return selected;
+}
+
+std::vector<int> TerminalReader::multiSelectMenu(const std::string& prompt, const std::vector<std::string>& options) {
+    if (!isTerminal() || options.empty()) return {};
+    int selected = 0;
+    int max_options = options.size();
+    std::vector<bool> checked(max_options, false);
+#ifndef _WIN32
+    struct termios oldt; setRawMode(true, &oldt);
+#endif
+
+    auto render = [&]() {
+        std::cout << "\r\033[2K" << prompt << "\n";
+        for (int i = 0; i < max_options; ++i) {
+            std::cout << "\033[2K\r";
+            std::string box = checked[i] ? "[x] " : "[ ] ";
+            if (i == selected) {
+                std::cout << Colored::fg(Color::LightAqua) << "  > " << box << options[i] << Colored::Reset << "\n";
+            } else {
+                auto color = checked[i] ? Color::LightGreen : Color::White;
+                std::cout << Colored::fg(color) << "    " << box << options[i] << Colored::Reset << "\n";
+            }
+        }
+        std::cout << "\033[" << max_options + 1 << "A" << std::flush;
+    };
+
+    render();
+    while (true) {
+        int c = getChar();
+        if (c == 13 || c == 10) break; // Enter
+        if (c == 32) { checked[selected] = !checked[selected]; render(); } // Space ile Toggle
+#ifdef _WIN32
+        else if (c == 72) { selected = (selected - 1 + max_options) % max_options; render(); }
+        else if (c == 80) { selected = (selected + 1) % max_options; render(); }
+#else
+        else if (c == 65) { selected = (selected - 1 + max_options) % max_options; render(); }
+        else if (c == 66) { selected = (selected + 1) % max_options; render(); }
+#endif
+    }
+    std::cout << "\033[" << max_options + 1 << "B";
+#ifndef _WIN32
+    setRawMode(false, &oldt);
+#endif
+
+    std::vector<int> result;
+    for (int i = 0; i < max_options; ++i) {
+        if (checked[i]) result.push_back(i);
+    }
+    return result;
 }
