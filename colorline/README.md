@@ -32,7 +32,33 @@ The executable is produced as `build/bin/colorline`.
 - `all` prints all defined colors.
 - numeric argument selects a specific color code (0..15).
 
+## API Examples
+
+From code (header-based or module-based):
+
+```cpp
+#include "colorline.hpp"
+
+int main() {
+    Colored::setColor(Color::Red);
+    std::cout << "Red text\n";
+    Colored::setColor(Color::Reset);
+
+    std::cout << Colored::text({Color::Green, Color::Black}, "Green text on black\n");
+
+    Colored::print("Aqua text\n", Color::Aqua, Color::Reset);
+    return 0;
+}
+```
+
+`Color` values correspond to entries in `include/colorline.hpp`, and `Color::Reset` restores default terminal styling.
+
+## Platform behavior
+
+- On Linux/macOS, ANSI escape sequences are used.
+- On Windows, both Windows API colors and ANSI fallback is handled in `Colored::setColor`.
+
 ## Notes
 
-- `main.cpp` is provided as a working example showing how to use module and header interfaces.
+- `src/main.cpp` is provided as a working example showing how to use module and header interfaces.
 - The project uses `C++23` and a module-friendly architecture.
